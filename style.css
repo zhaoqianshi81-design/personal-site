@@ -1,0 +1,75 @@
+async function loadData() {
+  try {
+    const response = await fetch('data.json');
+    return await response.json();
+  } catch (error) {
+    console.error('读取 data.json 失败：', error);
+    return { movies: [], books: [], notes: [], life: [] };
+  }
+}
+
+function coverBlock(item, fallback) {
+  const img = item.cover || item.image;
+  if (img) {
+    return `<div class="cover"><img src="${img}" alt="${item.title}" onerror="this.parentElement.textContent='${fallback}'"></div>`;
+  }
+  return `<div class="cover">${fallback}</div>`;
+}
+
+function renderMovies(movies) {
+  const el = document.getElementById('movies-list');
+  if (!el) return;
+  el.innerHTML = movies.map(movie => `
+    <article class="content-card">
+      ${coverBlock(movie, '🎬')}
+      <span class="meta">评分：${movie.rating || '未评分'}</span>
+      <h3>${movie.title}</h3>
+      <p>${movie.review}</p>
+    </article>
+  `).join('');
+}
+
+function renderBooks(books) {
+  const el = document.getElementById('books-list');
+  if (!el) return;
+  el.innerHTML = books.map(book => `
+    <article class="content-card">
+      ${coverBlock(book, '📚')}
+      <span class="meta">${book.status || '已读'}</span>
+      <h3>${book.title}</h3>
+      <p>${book.notes}</p>
+    </article>
+  `).join('');
+}
+
+function renderNotes(notes) {
+  const el = document.getElementById('notes-list');
+  if (!el) return;
+  el.innerHTML = notes.map(note => `
+    <article class="note-card">
+      <span class="tag">${note.category}</span>
+      <h3>${note.title}</h3>
+      <p>${note.content}</p>
+    </article>
+  `).join('');
+}
+
+function renderLife(life) {
+  const el = document.getElementById('life-list');
+  if (!el) return;
+  el.innerHTML = life.map(item => `
+    <article class="content-card">
+      ${coverBlock(item, '🌿')}
+      <span class="meta">${item.date || '生活记录'}</span>
+      <h3>${item.title}</h3>
+      <p>${item.description}</p>
+    </article>
+  `).join('');
+}
+
+loadData().then(data => {
+  renderMovies(data.movies || []);
+  renderBooks(data.books || []);
+  renderNotes(data.notes || []);
+  renderLife(data.life || []);
+});
